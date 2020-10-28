@@ -67,8 +67,8 @@ def plot_scatter(x, y, add_unit_line=True, add_R2=True, layout_kwargs=None):
     return fig
 
 
-layout_kwargs = dict(title=dict(text='scatter'), xaxis=dict(title={'text': 'X'})) #dict(showlegend=True) #dict(title='scatter', xaxis_title='X', legend_title='legend', showlegend=True)
-fig = plot_scatter(x=d['actual'], y=d['predicted'], layout_kwargs=layout_kwargs)
+# layout_kwargs = dict(title=dict(text='scatter'), xaxis=dict(title={'text': 'X'})) #dict(showlegend=True) #dict(title='scatter', xaxis_title='X', legend_title='legend', showlegend=True)
+# fig = plot_scatter(x=d['actual'], y=d['predicted'], layout_kwargs=layout_kwargs)
 
 
 
@@ -87,7 +87,29 @@ def calc_metrics_regression(actual, predicted, digits=3):
             'mse': mse, 'rmse': rmse,
             'corr': corr, 'R2_score': R2_score})
 
+def filter_df_rows(df, filter_by_col=None, filter_by_value=None):
+    #need to verify that if filter_by_col or filter_by_value are None then the function returns the dataframe intact.
+    if filter_by_col is None:
+        filter_by_col = df.columns.to_list()[0]
+    if filter_by_value is None:
+        filter_by_value = np.min(df[filter_by_col])
 
+    output = df[df[filter_by_col] >= filter_by_value]
+    return output
+
+
+# out = filter_data_rows(df_example, filter_by_col=df_example.columns.to_list()[1], filter_by_value=0)
+# print(out.head())
+
+
+def make_error_df(actual, predicted):
+    #actual and predicted are numpy arrays
+    dict = {'actual': actual, 'predicted': predicted}
+    error_df = pd.DataFrame(data=dict)
+    error_df['error'] = error_df['actual'] - error_df['predicted']
+    error_df['error_relative_to_predicted'] = error_df['error'] / error_df['predicted']
+    error_df['error_relative_to_actual'] = error_df['error'] / error_df['actual']
+    return error_df
 
 
 print('done')
