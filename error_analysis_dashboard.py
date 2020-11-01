@@ -28,7 +28,7 @@ class BasicDashboard(param.Parameterized):
     X = param.ObjectSelector(default=df_dashboard.columns.tolist()[0], objects=df_dashboard.columns.tolist())
     Y = param.ObjectSelector(default=df_dashboard.columns.tolist()[1], objects=df_dashboard.columns.tolist())
     filter_by_col = param.ObjectSelector(default=df_dashboard.columns.tolist()[0], objects=df_dashboard.columns.tolist())
-    filter_by_value = param.Integer(default=0, bounds=(0, 120), allow_None=True)
+    cutoff_value = param.Number(default=0, bounds=(0, 120), allow_None=True)
     var_to_inspect = param.ObjectSelector(default=df_dashboard.columns.tolist()[0], objects=df_dashboard.columns.tolist())
     updated_param = param.ObjectSelector(default='default', objects=['default', 'default1', 'default2'])
 
@@ -47,7 +47,7 @@ class BasicDashboard(param.Parameterized):
 
     def filter_data_rows(self):
         data = self.df.copy()
-        data = utils.filter_df_rows(df=data, filter_by_col=self.filter_by_col, filter_by_value=self.filter_by_value)
+        data = utils.filter_df_rows(df=data, filter_by_col=self.filter_by_col, cutoff_value=self.cutoff_value)
         return data
 
     def metrics_table_view(self):
@@ -89,7 +89,7 @@ class BasicDashboard(param.Parameterized):
 
 
     def wrap_param_var_to_inspect(self):
-        return pn.Param(BasicDashboard.param, parameters=['var_to_inspect'],
+        return pn.Param(self.param, parameters=['var_to_inspect'],
                  name='Choose variable to inspect distribution',
                  show_name=True,
                  widgets={'var_to_inspect': {'type': pn.widgets.RadioButtonGroup}},
@@ -97,10 +97,16 @@ class BasicDashboard(param.Parameterized):
 
     @param.depends('X', watch=True)
     def _update_param(self):
-        # self.param['updated_param'].objects = self.df.columns.tolist()
-        # self.updated_param = self.df.columns.tolist()[0]
-        self.param['updated_param'].objects = self.param['X'].objects
-        self.updated_param = self.X
+        self.param['updated_param'].objects = self.df.columns.tolist()
+        self.updated_param = self.df.columns.tolist()[0]
+        # self.param['updated_param'].objects = self.param['X'].objects
+        # self.updated_param = self.X
+
+
+    @param.depends('filter_by_col', watch=True)
+    def _update_cutoff_value(self):
+        self.param['cutoff_value'].bounds = (self.df[self.filter_by_col].min(), self.df[self.filter_by_col].max())
+        self.cutoff_value = self.df[self.filter_by_col].min()
 
 
 # pn.Param(BasicDashboard.param, parameters=['var_to_inspect'],
@@ -117,12 +123,11 @@ dash = BasicDashboard(df_dashboard)
 dashboard = pn.Column(dash.param['X'],
                       dash.param['Y'],
                       dash.param['filter_by_col'],
-                      dash.param['filter_by_value'],
+                      dash.param['cutoff_value'],
                       dash.error_summary_stats_table,
                       dash.metrics_table_view,
                       dash.scatter_view,
-                      dash.var_to_inspect,
-                      # dash.wrap_param_var_to_inspect,
+                      dash.wrap_param_var_to_inspect,
                       dash.error_boxplot_view,
                       dash.param['updated_param'],
                       )
