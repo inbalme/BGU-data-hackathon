@@ -86,18 +86,18 @@ def calc_metrics_regression(actual, predicted, digits=3):
             'corr': corr, 'R2_score': R2_score})
 
 
-def filter_df_rows(df, filter_by_col=None, cutoff_value=None):
-    # need to verify that if filter_by_col or cutoff_value are None then the function returns the dataframe intact.
-    if filter_by_col is None:
-        filter_by_col = df.columns.to_list()[0]
+def filter_df_rows(df, cutoff_by_column=None, cutoff_value=None):
+    # need to verify that if cutoff_by_column or cutoff_value are None then the function returns the dataframe intact.
+    if cutoff_by_column is None:
+        cutoff_by_column = df.columns.to_list()[0]
     if cutoff_value is None:
-        # cutoff_value = np.min(df[filter_by_col])
+        # cutoff_value = np.min(df[cutoff_by_column])
         return df
     else:
-        return df[df[filter_by_col] >= cutoff_value]
+        return df[df[cutoff_by_column] >= cutoff_value]
 
 
-# out = filter_data_rows(df_example, filter_by_col=df_example.columns.to_list()[1], cutoff_value=0)
+# out = filter_data_rows(df_example, cutoff_by_column=df_example.columns.to_list()[1], cutoff_value=0)
 # print(out.head())
 
 
