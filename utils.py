@@ -1,12 +1,24 @@
 import plotly.graph_objects as go
-import plotly.express as px
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.stattools import acf
 
-N = 100
-d = {'predicted': np.random.randn(N), 'actual': np.random.randn(N)}
-df_example = pd.DataFrame(data=d)
+def main():
+    N = 200
+    actual = np.random.normal(loc=50, scale=15, size=N)
+    predicted = actual + 0.2 * actual * np.random.normal(loc=0.5, scale=1, size=N)
+    d = {'predicted': predicted, 'actual': actual}
+    df_error = utils.make_error_df(actual=d['actual'], predicted=d['predicted'])
+
+
+def make_error_df(actual, predicted):
+    #actual and predicted are numpy arrays
+    dict = {'actual': actual, 'predicted': predicted}
+    error_df = pd.DataFrame(data=dict)
+    error_df['error'] = error_df['actual'] - error_df['predicted']
+    error_df['error_relative_to_predicted'] = error_df['error'] / error_df['predicted']
+    error_df['error_relative_to_actual'] = error_df['error'] / error_df['actual']
+    return error_df
+
 
 def plot_scatter(x, y, add_unit_line=True, add_R2=True, layout_kwargs=None):
     '''
@@ -15,12 +27,12 @@ def plot_scatter(x, y, add_unit_line=True, add_R2=True, layout_kwargs=None):
     :param add_unit_line: boolean. whether to add a line x=y
     :param add_R2: boolean. whether to add text of R2 on the plot
     :param layout_kwargs: a dictionary, according to plotly API:
-    https://plotly.com/python/figure-labels/#manual-labelling-with-graph-objects
-    https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html?highlight=update%20layout#plotly.graph_objects.Figure.update_layout
-    https://plotly.com/python-api-reference/generated/plotly.graph_objects.Layout.html
-    for example:
-    1. layout_kwargs = dict(title='scatter', xaxis_title='X', legend_title='legend', showlegend=True)
-    2. layout_kwargs = dict(title=dict(text='scatter'), xaxis=dict(title={'text': 'X'}))
+        https://plotly.com/python/figure-labels/#manual-labelling-with-graph-objects
+        https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html?highlight=update%20layout#plotly.graph_objects.Figure.update_layout
+        https://plotly.com/python-api-reference/generated/plotly.graph_objects.Layout.html
+        for example:
+        1. layout_kwargs = dict(title='scatter', xaxis_title='X', legend_title='legend', showlegend=True)
+        2. layout_kwargs = dict(title=dict(text='scatter'), xaxis=dict(title={'text': 'X'}))
     :return: plotly figure object
     '''
     # need to add titles, colors, fonts, (in **kwargs), option to add more traces (perhaps input should be tuples of [(x1,y1), (x2,y2)...])
@@ -58,6 +70,7 @@ def plot_scatter(x, y, add_unit_line=True, add_R2=True, layout_kwargs=None):
     fig.update_layout(showlegend=False)
     if layout_kwargs:
         fig.update_layout(**layout_kwargs)
+
     # Set options common to all traces with fig.update_traces
     # fig.update_traces(mode='markers', marker_line_width=2, marker_size=10)
     # fig.update_layout(title='Styled Scatter',
@@ -101,15 +114,8 @@ def filter_df_rows(df, cutoff_by_column=None, cutoff_value=None):
 # print(out.head())
 
 
-def make_error_df(actual, predicted):
-    #actual and predicted are numpy arrays
-    dict = {'actual': actual, 'predicted': predicted}
-    error_df = pd.DataFrame(data=dict)
-    error_df['error'] = error_df['actual'] - error_df['predicted']
-    error_df['error_relative_to_predicted'] = error_df['error'] / error_df['predicted']
-    error_df['error_relative_to_actual'] = error_df['error'] / error_df['actual']
-    return error_df
 
 
-print('done')
-print('done')
+
+# print('done')
+# print('done')
