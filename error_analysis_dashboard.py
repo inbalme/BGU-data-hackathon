@@ -1,6 +1,5 @@
 import pandas as pd
 import panel as pn
-import panel.widgets as pnw
 pn.extension('plotly')
 import plotly.express as px
 import param
@@ -15,20 +14,28 @@ np.random.seed(1)
 class BasicDashboardComponents(param.Parameterized):
     # variables to be displayed by widgets and set by the user:
     # select data column for scatter plot x-axis:
-    X = param.ObjectSelector(default=df_dashboard.columns.tolist()[0], objects=df_dashboard.columns.tolist(), label='x axis data')
+    X = param.ObjectSelector(default=None, objects=[], label='x axis data')
     # select data column for scatter plot y-axis:
-    Y = param.ObjectSelector(default=df_dashboard.columns.tolist()[1], objects=df_dashboard.columns.tolist(), label='y axis data')
+    Y = param.ObjectSelector(default=None, objects=[], label='y axis data')
     # select column by which to filter the dataframe:
-    cutoff_by_column = param.ObjectSelector(default=df_dashboard.columns.tolist()[0], objects=df_dashboard.columns.tolist())
+    cutoff_by_column = param.ObjectSelector(default=None, objects=[])
     # set cutoff value by which to filter (keeps rows with value >=cutoff_value:
     cutoff_value = param.Number(default=0, bounds=(0, 120), allow_None=True)
     # select column for boxplot view:
-    var_to_inspect = param.ObjectSelector(default=df_dashboard.columns.tolist()[0], objects=df_dashboard.columns.tolist())
-
+    var_to_inspect = param.ObjectSelector(default=None, objects=[])
 
     def __init__(self, df, *args, **kwargs):
         self.df = df
         super(type(self), self).__init__(*args, **kwargs)
+        # update parameters values based on instance external inputs:
+        self.X = self.df.columns.tolist()[0]  # set the default value of the widget
+        self.param.X.objects = self.df.columns.tolist()  # set the list of objects to select from in the widget
+        self.Y = self.df.columns.tolist()[1]
+        self.param.Y.objects = self.df.columns.tolist()
+        self.cutoff_by_column = self.df.columns.tolist()[0]
+        self.param.cutoff_by_column.objects = self.df.columns.tolist()
+        self.var_to_inspect = self.df.columns.tolist()[0]
+        self.param.var_to_inspect.objects = self.df.columns.tolist()
 
 
     def filter_data_rows(self):
@@ -96,7 +103,8 @@ class BasicDashboardComponents(param.Parameterized):
     @param.depends('cutoff_by_column', watch=True)
     def _update_cutoff_value(self):
         '''
-        an update method to dynamically change the range of self.cutoff_value based on the user selection of self.cutoff_by_column
+        an update method to dynamically change the range of self.cutoff_value based on the user selection of self.cutoff_by_column.
+        This method is triggered each time the chosen 'cutoff_by_column' change
         '''
         self.param['cutoff_value'].bounds = (self.df[self.cutoff_by_column].min(), self.df[self.cutoff_by_column].max())
         self.cutoff_value = self.df[self.cutoff_by_column].min()
@@ -112,10 +120,10 @@ def main():
     #input dataframe to the dashboard:
     df_dashboard = df_error.copy()
 
-    #puting together all dashboard components
-    # 1. wrapping dashboard components in Panel Layout objects (pn.Row or pn.Column):
     dash = BasicDashboardComponents(df_dashboard)
 
+    # putting together all dashboard components
+    # 1. wrapping dashboard components in Panel Layout objects (pn.Row or pn.Column):
     widgets_panel = pn.Column(dash.param['X'],
                               dash.param['Y'],
                               dash.param['cutoff_by_column'],

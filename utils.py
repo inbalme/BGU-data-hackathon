@@ -2,13 +2,6 @@ import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 
-def main():
-    N = 200
-    actual = np.random.normal(loc=50, scale=15, size=N)
-    predicted = actual + 0.2 * actual * np.random.normal(loc=0.5, scale=1, size=N)
-    d = {'predicted': predicted, 'actual': actual}
-    df_error = utils.make_error_df(actual=d['actual'], predicted=d['predicted'])
-
 
 def make_error_df(actual, predicted):
     #actual and predicted are numpy arrays
@@ -83,11 +76,10 @@ def plot_scatter(x, y, add_unit_line=True, add_R2=True, layout_kwargs=None):
 
 
 
-from sklearn.metrics import explained_variance_score, mean_absolute_error
+from sklearn.metrics import explained_variance_score
 
 def calc_metrics_regression(actual, predicted, digits=3):
     R2_score = round(explained_variance_score(actual, predicted), digits)
-    # mae = round(mean_absolute_error(actual, predicted), digits)
     mae = round(np.nanmean(np.abs(predicted - actual)), digits)
     mse = round(np.nanmean((predicted - actual) ** 2), digits)
     rmse = round(np.nanmean((predicted - actual) ** 2) ** .5, digits)
@@ -110,12 +102,14 @@ def filter_df_rows(df, cutoff_by_column=None, cutoff_value=None):
         return df[df[cutoff_by_column] >= cutoff_value]
 
 
-# out = filter_data_rows(df_example, cutoff_by_column=df_example.columns.to_list()[1], cutoff_value=0)
-# print(out.head())
+def main():
+    N = 200
+    actual = np.random.normal(loc=50, scale=15, size=N)
+    predicted = actual + 0.2 * actual * np.random.normal(loc=0.5, scale=1, size=N)
+    d = {'predicted': predicted, 'actual': actual}
+    df_error = make_error_df(actual=d['actual'], predicted=d['predicted'])
+    out = filter_df_rows(df_error, cutoff_by_column=df_error.columns.to_list()[1], cutoff_value=0)
+    print(out.head())
 
-
-
-
-
-# print('done')
-# print('done')
+if __name__ == '__main__':
+    main()
