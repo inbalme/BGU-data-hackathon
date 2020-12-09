@@ -37,7 +37,7 @@ class BasicDashboard(param.Parameterized):
         self.df = df
         #add assert that headers are 'actual' and 'predicted', or specify colnames that correspond to them.
 
-        cls = type(self) #gets the class (BasicDashboard in this case)
+        cls = type(self) #gets the class (BasicDashboardComponents in this case)
         # cls.X = param.ObjectSelector(objects=self.df.columns.tolist())
         # cls.Y = param.ObjectSelector(objects=self.df.columns.tolist())
         # kwargs["X"] = param.ObjectSelector(objects=self.df.columns.tolist())
@@ -110,14 +110,14 @@ class BasicDashboard(param.Parameterized):
         self.cutoff_value = self.df[self.cutoff_by_column].min()
 
 
-# pn.Param(BasicDashboard.param, parameters=['var_to_inspect'],
+# pn.Param(BasicDashboardComponents.param, parameters=['var_to_inspect'],
 #                                  name='Choose variable to inspect distribution',
 #                                  show_name=True,
 #                                  widgets={'var_to_inspect': {'type': pn.widgets.RadioButtonGroup}},
 #                                  width =500),
 
 dash = BasicDashboard(df_dashboard)
-# pn.Param(BasicDashboard.param, widgets={'X': pn.widgets.RadioButtonGroup})
+# pn.Param(BasicDashboardComponents.param, widgets={'X': pn.widgets.RadioButtonGroup})
 
 widgets_panel = pn.Column(dash.param['X'],
                           dash.param['Y'],

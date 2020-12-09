@@ -8,8 +8,6 @@ import sys
 sys.path.append(r'C:\Users\user\Google Drive\my projects\DS dashboard tool')
 import utils
 
-np.random.seed(1)
-
 
 class BasicDashboardComponents(param.Parameterized):
     # variables to be displayed by widgets and set by the user:
@@ -112,10 +110,7 @@ class BasicDashboardComponents(param.Parameterized):
 
 def main():
     # For this demo, we generate synthetic data:
-    N = 200
-    actual = np.random.normal(loc=50, scale=15, size=N)
-    predicted = actual + 0.2*actual*np.random.normal(loc=0.5, scale=1, size=N)
-    d = {'predicted': predicted, 'actual': actual}
+    d = utils.generate_synth_actual_and_predicted(N=200, mu=50, sigma=15, err_mu=0.5, err_sigma=1, err_scaling_factor=0.2)
     df_error = utils.make_error_df(actual=d['actual'], predicted=d['predicted'])
     #input dataframe to the dashboard:
     df_dashboard = df_error.copy()

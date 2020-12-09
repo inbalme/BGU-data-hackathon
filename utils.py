@@ -1,9 +1,17 @@
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
+from sklearn.metrics import explained_variance_score
 
 
 def make_error_df(actual, predicted):
+    '''
+    returns a dataframe with prediction errors (diff-error and relative-errors)
+    from input numpy arrays of actual and predicted values.
+    :param actual:
+    :param predicted:
+    :return:
+    '''
     #actual and predicted are numpy arrays
     dict = {'actual': actual, 'predicted': predicted}
     error_df = pd.DataFrame(data=dict)
@@ -15,6 +23,7 @@ def make_error_df(actual, predicted):
 
 def plot_scatter(x, y, add_unit_line=True, add_R2=True, layout_kwargs=None):
     '''
+    makes a scatter plot with Plotly
     :param x: numpy array
     :param y: numpy array
     :param add_unit_line: boolean. whether to add a line x=y
@@ -76,9 +85,15 @@ def plot_scatter(x, y, add_unit_line=True, add_R2=True, layout_kwargs=None):
 
 
 
-from sklearn.metrics import explained_variance_score
 
 def calc_metrics_regression(actual, predicted, digits=3):
+    '''
+    returns a dictionary of regression metrics calculated from input numpy arrays of actual and predicted values
+    :param actual:
+    :param predicted:
+    :param digits:
+    :return:
+    '''
     R2_score = round(explained_variance_score(actual, predicted), digits)
     mae = round(np.nanmean(np.abs(predicted - actual)), digits)
     mse = round(np.nanmean((predicted - actual) ** 2), digits)
@@ -92,6 +107,13 @@ def calc_metrics_regression(actual, predicted, digits=3):
 
 
 def filter_df_rows(df, cutoff_by_column=None, cutoff_value=None):
+    '''
+    returns a filtered dataframe where values in column "cutoff_by_column" >= "cutoff_value"
+    :param df:
+    :param cutoff_by_column:
+    :param cutoff_value:
+    :return:
+    '''
     # need to verify that if cutoff_by_column or cutoff_value are None then the function returns the dataframe intact.
     if cutoff_by_column is None:
         cutoff_by_column = df.columns.to_list()[0]
@@ -101,15 +123,30 @@ def filter_df_rows(df, cutoff_by_column=None, cutoff_value=None):
     else:
         return df[df[cutoff_by_column] >= cutoff_value]
 
+def generate_synth_actual_and_predicted(N=100, mu=0, sigma=1, err_mu=0, err_sigma=1, err_scaling_factor=1, seed=1):
+    '''
+    generates a numpy array of "actual" values: N random numbers from a normal distribution with mean=mu and std=sigma
+    and a numpy array of "predicted" values: the "actual" values with an additive or multiplicative error.
+    :param N: length of generated vector of actual and predicted values
+    :param mu: mean of normal distribution that generates the actual values
+    :param sigma: std of normal distribution that generates the actual values
+    :param err_mu: mean of normal distribution that generates the error values
+    :param err_sigma: std of normal distribution that generates the error values
+    :param err_scaling_factor: scale of the error
+    :return: a dictionary with keys: 'actual', 'predicted'
+    '''
+    np.random.seed(seed)
+    actual = np.random.normal(loc=mu, scale=sigma, size=N)
+    predicted = actual + err_scaling_factor * actual * np.random.normal(loc=err_mu, scale=err_sigma, size=N)
+    return {'predicted': predicted, 'actual': actual}
+
 
 def main():
-    N = 200
-    actual = np.random.normal(loc=50, scale=15, size=N)
-    predicted = actual + 0.2 * actual * np.random.normal(loc=0.5, scale=1, size=N)
-    d = {'predicted': predicted, 'actual': actual}
+    d = generate_synth_actual_and_predicted(N=200, mu=50, sigma=15, err_mu=0.5, err_sigma=1, err_scaling_factor=0.2)
     df_error = make_error_df(actual=d['actual'], predicted=d['predicted'])
     out = filter_df_rows(df_error, cutoff_by_column=df_error.columns.to_list()[1], cutoff_value=0)
     print(out.head())
+
 
 if __name__ == '__main__':
     main()
